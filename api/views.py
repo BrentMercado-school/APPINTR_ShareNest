@@ -5,7 +5,8 @@ from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
 from rest_framework.response import Response
 
 from api.models import Category, User, Item
-from api.serializers import CategorySerializer, UserSerializer, ItemSerializer, RegisterUserSerializer
+from api.serializers import CategorySerializer, UserSerializer, ItemSerializer, RegisterUserSerializer, \
+    LoginUserSerializer
 
 
 # TODO: 4 for controlling what data the API returns
@@ -34,3 +35,21 @@ class ItemListAPIView(generics.ListAPIView):
 class RegisterUserAPIView(generics.CreateAPIView):
     serializer_class = RegisterUserSerializer
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+class LoginUserAPIView(generics.GenericAPIView):
+    serializer_class = LoginUserSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = UserSerializer(serializer.validated_data['user']).data
+
+        return Response({
+            "user": {
+                "id": user.get('id'),
+                "name": user.get('name'),
+                "email": user.get('email'),
+            },
+            "message": "Login Successful",
+        })

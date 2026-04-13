@@ -1,6 +1,7 @@
 from django.urls import path
 
-from api.views import get_health_check, CategoryListAPIView, UserListAPIView, ItemListAPIView, RegisterUserAPIView
+from api.views import get_health_check, CategoryListAPIView, UserListAPIView, ItemListAPIView, RegisterUserAPIView, \
+    LoginUserAPIView
 
 # TODO: 5 for routing
 
@@ -10,4 +11,5 @@ urlpatterns = [
     path("users/", UserListAPIView.as_view(), name="users"),
     path("items/", ItemListAPIView.as_view(), name="items"),
     path("users/register/", RegisterUserAPIView.as_view(), name="register"),
+    path("users/login/", LoginUserAPIView.as_view(), name="login"),
 ]
