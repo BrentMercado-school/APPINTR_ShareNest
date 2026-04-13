@@ -21,3 +21,17 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = '__all__'
+
+class RegisterUserSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True)
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ("id", "name", "email", "password", "createdAt", "updatedAt")
+        read_only_fields = ('id', 'email', 'createdAt', 'updatedAt')
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+
+        return User.objects.create(**validated_data)

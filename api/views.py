@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
 from rest_framework.response import Response
 
 from api.models import Category, User, Item
-from api.serializers import CategorySerializer, UserSerializer, ItemSerializer
+from api.serializers import CategorySerializer, UserSerializer, ItemSerializer, RegisterUserSerializer
 
 
 # TODO: 4 for controlling what data the API returns
@@ -30,3 +30,7 @@ class UserListAPIView(generics.ListAPIView):
 class ItemListAPIView(generics.ListAPIView):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+
+class RegisterUserAPIView(generics.CreateAPIView):
+    serializer_class = RegisterUserSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
