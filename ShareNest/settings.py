@@ -41,7 +41,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-ROOT_URLCONF = "PeramShare.urls"
+ROOT_URLCONF = "ShareNest.urls"
 
 TEMPLATES = [
     {
@@ -58,7 +58,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "PeramShare.wsgi.application"
+WSGI_APPLICATION = "ShareNest.wsgi.application"
 
 DATABASES = {
     "default": {
