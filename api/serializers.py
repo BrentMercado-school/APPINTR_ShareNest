@@ -1,7 +1,7 @@
 from rest_framework import serializers, generics
 from django.contrib.auth.hashers import make_password, check_password
 
-from api.models import Category, User, Item
+from api.models import Category, User, Item, BorrowForm, ReturnForm, ItemImage
 
 
 # TODO: 3 for converting models to usable data on frontend
@@ -11,16 +11,36 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
     class Meta:
         model = User
-        fields = '__all__'
+        fields = [
+            "id",
+            "name",
+            "email",
+            "address",
+            "contactNumber",
+            "imageUrl",
+            "createdAt",
+        ]
 
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = '__all__'
+        fields = [
+            "id",
+            "category",
+            "owner",
+            "name",
+            "description",
+            "condition",
+            "security_deposit",
+            "note",
+            "status",
+            "borrowingFee",
+            "createdAt",
+            "updatedAt",
+        ]
+        read_only_fields = ["owner", "createdAt", "updatedAt"]
 
 class RegisterUserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
@@ -54,3 +74,112 @@ class  LoginUserSerializer(serializers.Serializer):
 
         attrs['user'] = existing_user
         return attrs
+
+class BorrowFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BorrowForm
+        fields = [
+            "id",
+            "borrower",
+            "item",
+            "startDate",
+            "returnDate",
+            "status",
+            "declineReason",
+            "createdAt",
+            "borrowingFeeSnapshot",
+            "securityDepositSnapshot",
+        ]
+        read_only_fields = [
+            "borrower",
+            "item",
+            "status",
+            "declineReason",
+            "createdAt",
+            "borrowingFeeSnapshot",
+            "securityDepositSnapshot",
+        ]
+
+class BorrowFormListSerializer(serializers.ModelSerializer):
+    borrower_name = serializers.CharField(source="borrower.name", read_only=True)
+    item_name = serializers.CharField(source="item.name", read_only=True)
+
+    class Meta:
+        model = BorrowForm
+        fields = [
+            "id",
+            "borrower",
+            "borrower_name",
+            "item",
+            "item_name",
+            "startDate",
+            "returnDate",
+            "status",
+            "declineReason",
+            "createdAt",
+            "borrowingFeeSnapshot",
+            "securityDepositSnapshot",
+        ]
+
+class MyBorrowRequestSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source="item.name", read_only=True)
+    owner_name = serializers.CharField(source="item.owner.name", read_only=True)
+
+    class Meta:
+        model = BorrowForm
+        fields = [
+            "id",
+            "item",
+            "item_name",
+            "owner_name",
+            "startDate",
+            "returnDate",
+            "status",
+            "declineReason",
+            "createdAt",
+            "borrowingFeeSnapshot",
+            "securityDepositSnapshot",
+        ]
+
+class MyBorrowedItemSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source="item.name", read_only=True)
+    owner_name = serializers.CharField(source="item.owner.name", read_only=True)
+    category_name = serializers.CharField(source="item.category.name", read_only=True)
+    item_description = serializers.CharField(source="item.description", read_only=True)
+    item_condition = serializers.CharField(source="item.condition", read_only=True)
+
+    class Meta:
+        model = BorrowForm
+        fields = [
+            "id",
+            "item",
+            "item_name",
+            "owner_name",
+            "category_name",
+            "item_description",
+            "item_condition",
+            "startDate",
+            "returnDate",
+            "borrowingFeeSnapshot",
+            "securityDepositSnapshot",
+            "status",
+        ]
+
+class ReturnFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReturnForm
+        fields = [
+            "id",
+            "borrowForm",
+            "actualReturnDate",
+            "damageFee",
+            "latePenaltyFee",
+            "refundAmount",
+            "createdAt",
+        ]
+        read_only_fields = ["borrowForm", "createdAt"]
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["name", "email", "address", "contactNumber", "imageUrl"]
