@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import generics, status, request
 from django.http import JsonResponse
 from rest_framework.generics import ListAPIView
@@ -335,23 +336,36 @@ class CreateReturnFormAPIView(generics.CreateAPIView):
         try:
             borrow_form = BorrowForm.objects.get(
                 item_id=item_id,
-                status="APPROVED"
+                status="APPROVED",
+                returnform__isnull=True
             )
         except BorrowForm.DoesNotExist:
             return Response(
-                {"detail": "No approved borrow form found for this item."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if ReturnForm.objects.filter(borrowForm=borrow_form).exists():
-            return Response(
-                {"detail": "Return form already exists for this borrowed item."},
+                {"detail": "No active approved borrow form found for this item."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(borrowForm=borrow_form)
+
+        actual_return_date = serializer.validated_data["actualReturnDate"]
+        damage_fee = serializer.validated_data["damageFee"]
+
+        expected_return_date = borrow_form.returnDate
+        late_days = max(0, (actual_return_date - expected_return_date).days)
+        late_penalty_fee = Decimal(late_days) * Decimal("50.00")
+
+        refund_amount = (
+            borrow_form.securityDepositSnapshot
+            - late_penalty_fee
+            - damage_fee
+        )
+
+        serializer.save(
+            borrowForm=borrow_form,
+            latePenaltyFee=late_penalty_fee,
+            refundAmount=refund_amount
+        )
 
         item.status = "AVAILABLE"
         item.save()
@@ -359,7 +373,8 @@ class CreateReturnFormAPIView(generics.CreateAPIView):
         return Response(
             {
                 "message": "Return form created successfully.",
-                "data": serializer.data
+                "latePenaltyFee": str(late_penalty_fee),
+                "refundAmount": str(refund_amount),
             },
             status=status.HTTP_201_CREATED
         )

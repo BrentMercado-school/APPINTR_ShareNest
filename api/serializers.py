@@ -75,7 +75,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
         return User.objects.create(**validated_data)
 
-class  LoginUserSerializer(serializers.Serializer):
+class LoginUserSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True)
 
@@ -196,7 +196,7 @@ class ReturnFormSerializer(serializers.ModelSerializer):
             "refundAmount",
             "createdAt",
         ]
-        read_only_fields = ["borrowForm", "createdAt"]
+        read_only_fields = ["borrowForm", "latePenaltyFee", "refundAmount", "createdAt"]
 
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
