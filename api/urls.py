@@ -5,7 +5,8 @@ from api.views import get_health_check, CategoryListAPIView, UserListAPIView, It
     DeleteItemAPIView, ItemDetailAPIView, CreateBorrowFormAPIView, BorrowListAPIView, OwnedItemBorrowRequestsAPIView, \
     AcceptBorrowRequestAPIView, DeclineBorrowRequestAPIView, MyBorrowRequestsAPIView, MyBorrowedItemsAPIView, \
     CreateReturnFormAPIView, UpdateCurrentUserAPIView, LatestItemsAPIView, AllItemsDashboardAPIView, \
-    SportsCategoryAPIView, ElectronicsCategoryAPIView
+    SportsCategoryAPIView, ElectronicsCategoryAPIView, BooksCategoryAPIView, MusicCategoryAPIView, \
+    OutdoorCategoryAPIView, ApplianceCategoryAPIView
 
 # TODO: 5 for routing
 
@@ -36,4 +37,8 @@ urlpatterns = [
     path("items/allitems/dashboard/", AllItemsDashboardAPIView.as_view(), name="all-items-dashboard"),
     path("items/sports/", SportsCategoryAPIView.as_view(), name="sports-category"),
     path("items/electronics/", ElectronicsCategoryAPIView.as_view(), name="electronics-category"),
+    path("items/books/", BooksCategoryAPIView.as_view(), name="books-category"),
+    path("items/music/", MusicCategoryAPIView.as_view(), name="music-category"),
+    path("items/outdoor/", OutdoorCategoryAPIView.as_view(), name="outdoor-category"),
+    path("items/appliance/", ApplianceCategoryAPIView.as_view(), name="appliance-category"),
 ]

@@ -447,3 +447,55 @@ class ElectronicsCategoryAPIView(generics.ListAPIView):
             queryset = queryset.exclude(owner_id=user_id)
 
         return queryset.filter(category__name__iexact="Electronics")
+
+class BooksCategoryAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset.filter(category__name__iexact="Books")
+
+class MusicCategoryAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset.filter(category__name__iexact="Music")
+
+class OutdoorCategoryAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset.filter(category__name__iexact="Outdoor")
+
+class ApplianceCategoryAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset.filter(category__name__iexact="Appliance")
