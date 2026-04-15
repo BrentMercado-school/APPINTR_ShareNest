@@ -421,3 +421,29 @@ class AllItemsDashboardAPIView(generics.ListAPIView):
             queryset = queryset.exclude(owner_id=user_id)
 
         return queryset
+
+class SportsCategoryAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset.filter(category__name__iexact="Sports")
+
+class ElectronicsCategoryAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset.filter(category__name__iexact="Electronics")

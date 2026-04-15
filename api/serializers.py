@@ -25,12 +25,15 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ItemSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source="owner.name", read_only=True)
+    category_name = serializers.CharField(source="category.name", read_only=True)
+    expected_return_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
         fields = [
             "id",
             "category",
+            "category_name",
             "owner",
             "owner_name",
             "name",
@@ -42,8 +45,21 @@ class ItemSerializer(serializers.ModelSerializer):
             "borrowingFee",
             "createdAt",
             "updatedAt",
+            "expected_return_date",
         ]
         read_only_fields = ["owner", "createdAt", "updatedAt"]
+
+    def get_expected_return_date(self, obj):
+        if obj.status != "BORROWED":
+            return None
+
+        active_borrow = BorrowForm.objects.filter(
+            item=obj,
+            status="APPROVED",
+            returnform__isnull=True
+        ).order_by("-createdAt").first()
+
+        return active_borrow.returnDate if active_borrow else None
 
 class RegisterUserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)

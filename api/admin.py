@@ -38,3 +38,6 @@ class ItemAdmin(admin.ModelAdmin):
         "updatedAt",
     )
     search_fields = ("name",)
+
+
+
