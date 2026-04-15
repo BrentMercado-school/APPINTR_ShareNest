@@ -395,3 +395,29 @@ class UpdateCurrentUserAPIView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK
         )
+
+class LatestItemsAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset.order_by("-createdAt")[:5]
+
+class AllItemsDashboardAPIView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        user_id = self.request.session.get("user_id")
+
+        queryset = Item.objects.all()
+
+        if user_id:
+            queryset = queryset.exclude(owner_id=user_id)
+
+        return queryset

@@ -4,7 +4,7 @@ from api.views import get_health_check, CategoryListAPIView, UserListAPIView, It
     LoginUserAPIView, CurrentUserAPIView, UserItemsAPIView, LogoutUserAPIView, CreateItemAPIView, UpdateItemAPIView, \
     DeleteItemAPIView, ItemDetailAPIView, CreateBorrowFormAPIView, BorrowListAPIView, OwnedItemBorrowRequestsAPIView, \
     AcceptBorrowRequestAPIView, DeclineBorrowRequestAPIView, MyBorrowRequestsAPIView, MyBorrowedItemsAPIView, \
-    CreateReturnFormAPIView, UpdateCurrentUserAPIView
+    CreateReturnFormAPIView, UpdateCurrentUserAPIView, LatestItemsAPIView, AllItemsDashboardAPIView
 
 # TODO: 5 for routing
 
@@ -31,4 +31,6 @@ urlpatterns = [
     path("users/my-borrowed-items/", MyBorrowedItemsAPIView.as_view(), name="my-borrowed-items"),
     path("items/<int:pk>/return/", CreateReturnFormAPIView.as_view(), name="create-return-form"),
     path("users/me/update/", UpdateCurrentUserAPIView.as_view(), name="update-current-user"),
+    path("items/latest/", LatestItemsAPIView.as_view(), name="latest-items"),
+    path("items/allitems/dashboard/", AllItemsDashboardAPIView.as_view(), name="all-items-dashboard"),
 ]
