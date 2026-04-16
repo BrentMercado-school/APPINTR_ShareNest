@@ -143,6 +143,12 @@ class DeleteItemAPIView(generics.GenericAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+        if item.status == "BORROWED":
+            return Response(
+                {"detail": "Borrowed items cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         item.isActive = False
         item.save()
 
