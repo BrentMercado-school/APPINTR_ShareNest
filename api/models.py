@@ -47,6 +47,8 @@ class Item(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="AVAILABLE")
     borrowingFee = models.DecimalField(max_digits=10, decimal_places=2)
 
+    isActive = models.BooleanField(default=True)
+
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
 

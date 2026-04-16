@@ -1,4 +1,6 @@
 from decimal import Decimal
+
+from django.db.models import ProtectedError
 from rest_framework import generics, status, request
 from django.http import JsonResponse
 from rest_framework.generics import ListAPIView
@@ -31,7 +33,7 @@ class UserListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
 
 class ItemListAPIView(generics.ListAPIView):
-    queryset = Item.objects.all()
+    queryset = Item.objects.filter(isActive=True)
     serializer_class = ItemSerializer
 
 class RegisterUserAPIView(generics.CreateAPIView):
@@ -84,8 +86,8 @@ class UserItemsAPIView(generics.ListAPIView):
     serializer_class = ItemSerializer
 
     def get_queryset(self):
-        userId = self.request.session.get("user_id")
-        return Item.objects.filter(owner=userId)
+        user_id = self.request.session.get("user_id")
+        return Item.objects.filter(owner_id=user_id, isActive=True)
 
 class LogoutUserAPIView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
@@ -108,18 +110,42 @@ class UpdateItemAPIView(generics.RetrieveUpdateAPIView):
 
     def get_queryset(self):
         user_id = self.request.session.get("user_id")
-        return Item.objects.filter(owner_id=user_id)
+        return Item.objects.filter(owner_id=user_id, isActive=True)
 
-class DeleteItemAPIView(generics.DestroyAPIView):
-    serializer_class = ItemSerializer
+    def update(self, request, *args, **kwargs):
+        item = self.get_object()
 
-    def get_queryset(self):
-        user_id = self.request.session.get("user_id")
-        return Item.objects.filter(owner_id=user_id)
+        if item.status == "BORROWED":
+            return Response(
+                {"detail": "Borrowed items cannot be edited."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        return super().update(request, *args, **kwargs)
+
+class DeleteItemAPIView(generics.GenericAPIView):
     def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
+        user_id = request.session.get("user_id")
+
+        if not user_id:
+            return Response(
+                {"detail": "Not authenticated."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        item_id = kwargs.get("pk")
+
+        try:
+            item = Item.objects.get(pk=item_id, owner_id=user_id, isActive=True)
+        except Item.DoesNotExist:
+            return Response(
+                {"detail": "Item not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        item.isActive = False
+        item.save()
+
         return Response(
             {"message": "Item deleted successfully."},
             status=status.HTTP_200_OK
