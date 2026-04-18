@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 from api.models import Category, User, Item, BorrowForm, ReturnForm, ItemImage
 
-
+# JC was here.
 # TODO: 3 for converting models to usable data on frontend
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
