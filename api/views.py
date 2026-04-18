@@ -238,39 +238,72 @@ class OwnedItemBorrowRequestsAPIView(generics.ListAPIView):
 
         return BorrowForm.objects.filter(item__owner_id=user_id).order_by("-createdAt")
 
+from rest_framework import generics, status
+from rest_framework.response import Response
+from .models import BorrowForm, Item, User
+
 class AcceptBorrowRequestAPIView(generics.GenericAPIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request, pk):
         user_id = request.session.get("user_id")
 
         if not user_id:
             return Response(
-                {"detail": "Not authenticated."},
+                {"detail": "Authentication credentials were not provided."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        borrow_request_id = kwargs.get("pk")
+        try:
+            owner = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
-            borrow_request = BorrowForm.objects.get(
-                pk=borrow_request_id,
-                item__owner_id=user_id
-            )
+            borrow_form = BorrowForm.objects.select_related("item").get(pk=pk)
         except BorrowForm.DoesNotExist:
             return Response(
                 {"detail": "Borrow request not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        if borrow_request.status != "PENDING":
+        if borrow_form.item.owner != owner:
             return Response(
-                {"detail": "Only pending requests can be approved."},
+                {"detail": "You are not allowed to accept this request."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if borrow_form.status != "PENDING":
+            return Response(
+                {"detail": "Only pending requests can be accepted."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        borrow_request.status = "APPROVED"
-        borrow_request.save()
+        # very important check
+        if borrow_form.item.status == "BORROWED":
+            return Response(
+                {"detail": "Item is already borrowed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        item = borrow_request.item
+        # optional stronger check in case status gets out of sync
+        existing_approved = BorrowForm.objects.filter(
+            item=borrow_form.item,
+            status="APPROVED",
+            returnform__isnull=True
+        ).exclude(pk=borrow_form.pk).exists()
+
+        if existing_approved:
+            return Response(
+                {"detail": "Item is already borrowed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        borrow_form.status = "APPROVED"
+        borrow_form.save()
+
+        item = borrow_form.item
         item.status = "BORROWED"
         item.save()
 
