@@ -5,6 +5,7 @@ from rest_framework import generics, status, request
 from django.http import JsonResponse
 from rest_framework.generics import ListAPIView
 from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.models import Category, User, Item, BorrowForm, ReturnForm
@@ -546,3 +547,43 @@ class ApplianceCategoryAPIView(generics.ListAPIView):
             queryset = queryset.exclude(owner_id=user_id)
 
         return queryset.filter(category__name__iexact="Appliance")
+
+class CancelBorrowRequestAPIView(generics.GenericAPIView):
+    def patch(self, request, pk):
+        user_id = request.session.get("user_id")
+
+        if not user_id:
+            return Response(
+                {"detail": "Authentication credentials were not provided."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            borrow_form = BorrowForm.objects.get(pk=pk, borrower=user)
+        except BorrowForm.DoesNotExist:
+            return Response(
+                {"detail": "Borrow request not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if borrow_form.status != "PENDING":
+            return Response(
+                {"detail": "Only pending requests can be cancelled."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        borrow_form.status = "CANCELLED"
+        borrow_form.save()
+
+        return Response(
+            {"message": "Borrow request cancelled successfully."},
+            status=status.HTTP_200_OK
+        )

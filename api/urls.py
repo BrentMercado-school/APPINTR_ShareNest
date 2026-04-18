@@ -6,7 +6,7 @@ from api.views import get_health_check, CategoryListAPIView, UserListAPIView, It
     AcceptBorrowRequestAPIView, DeclineBorrowRequestAPIView, MyBorrowRequestsAPIView, MyBorrowedItemsAPIView, \
     CreateReturnFormAPIView, UpdateCurrentUserAPIView, LatestItemsAPIView, AllItemsDashboardAPIView, \
     SportsCategoryAPIView, ElectronicsCategoryAPIView, BooksCategoryAPIView, MusicCategoryAPIView, \
-    OutdoorCategoryAPIView, ApplianceCategoryAPIView
+    OutdoorCategoryAPIView, ApplianceCategoryAPIView, CancelBorrowRequestAPIView
 
 # TODO: 5 for routing
 
@@ -41,4 +41,5 @@ urlpatterns = [
     path("items/music/", MusicCategoryAPIView.as_view(), name="music-category"),
     path("items/outdoor/", OutdoorCategoryAPIView.as_view(), name="outdoor-category"),
     path("items/appliance/", ApplianceCategoryAPIView.as_view(), name="appliance-category"),
+    path("borrow-forms/<int:pk>/cancel/", CancelBorrowRequestAPIView.as_view(), name="cancel-borrow-request"),
 ]
