@@ -71,6 +71,7 @@ class BorrowForm(models.Model):
         ("APPROVED", "Approved"),
         ("DECLINED", "Declined"),
         ("PENDING", "Pending"),
+        ("CANCELLED", "Cancelled"),
     ]
 
     borrower = models.ForeignKey(User, on_delete=models.PROTECT)
