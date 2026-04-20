@@ -1,5 +1,5 @@
 from decimal import Decimal
-
+from .models import ItemImage
 from django.db.models import ProtectedError
 from rest_framework import generics, status, request
 from django.http import JsonResponse
@@ -101,10 +101,22 @@ class LogoutUserAPIView(generics.GenericAPIView):
 
 class CreateItemAPIView(generics.CreateAPIView):
     serializer_class = ItemSerializer
+    parser_classes = [MultiPartParser, FormParser]
 
     def perform_create(self, serializer):
         user_id = self.request.session.get("user_id")
-        serializer.save(owner_id=user_id)
+
+        item = serializer.save(owner_id=user_id)
+
+        # 🔥 SAVE IMAGE HERE
+        image_file = self.request.FILES.get("image")
+
+        if image_file:
+            ItemImage.objects.create(
+                item=item,
+                image=image_file,
+                isPrimary=True
+            )
 
 class UpdateItemAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = ItemSerializer
@@ -443,6 +455,7 @@ class CreateReturnFormAPIView(generics.CreateAPIView):
 
 class UpdateCurrentUserAPIView(generics.GenericAPIView):
     serializer_class = UpdateProfileSerializer
+    parser_classes = [MultiPartParser, FormParser]  # ✅ ADD THIS
 
     def put(self, request, *args, **kwargs):
         user_id = request.session.get("user_id")
@@ -462,16 +475,16 @@ class UpdateCurrentUserAPIView(generics.GenericAPIView):
             )
 
         serializer = self.get_serializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
 
-        return Response(
-            {
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({
                 "message": "Profile updated successfully.",
                 "user": UserSerializer(user).data
-            },
-            status=status.HTTP_200_OK
-        )
+            })
+
+        return Response(serializer.errors, status=400)
 
 class LatestItemsAPIView(generics.ListAPIView):
     serializer_class = ItemSerializer
