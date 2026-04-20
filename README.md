@@ -13,7 +13,7 @@ This project is divided into two separate GitHub repositories:
 
 ## Repositories
 - Frontend: `https://github.com/your-username/ShareNestUI](https://github.com/BrentMercado-school/ShareNestUI.git`
-- Backend: `https://github.com/your-username/ShareNestAPI`
+- Backend: `https://github.com/your-username/ShareNestAPI](https://github.com/BrentMercado-school/APPINTR_ShareNest.git`
 
 ## Objectives
 - Encourage community sharing
