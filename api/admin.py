@@ -15,7 +15,7 @@ class UserAdmin(admin.ModelAdmin):
         "email",
         "address",
         "contactNumber",
-        "imageUrl",
+        "image",
         "password",
         "createdAt",
         "updatedAt",
