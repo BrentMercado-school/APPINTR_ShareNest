@@ -5,6 +5,16 @@ ShareNestUI is a web-based community resource sharing platform where users can s
 ## Introduction
 Many useful items are underused in communities. ShareNestUI was developed to make borrowing and lending easier, more organized, and more accessible through a simple web interface.
 
+## Project Structure
+This project is divided into two separate GitHub repositories:
+
+- **Frontend Repository** – contains the user interface built with HTML, CSS, and JavaScript
+- **Backend Repository** – contains the Django API and database logic
+
+## Repositories
+- Frontend: `https://github.com/your-username/ShareNestUI](https://github.com/BrentMercado-school/ShareNestUI.git`
+- Backend: `https://github.com/your-username/ShareNestAPI`
+
 ## Objectives
 - Encourage community sharing
 - Reduce unnecessary purchases
@@ -39,6 +49,10 @@ Many useful items are underused in communities. ShareNestUI was developed to mak
 2. Open the backend project
 3. Run the Django server
 4. Open the frontend files using Live Server or a local server
+
+## Packages to Install
+1. pip install djangorestframework pillow django-cors-headers
+2. pip install django-cors-headers
 
 ## Team Members
 - Brent Mercado
