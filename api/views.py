@@ -238,10 +238,6 @@ class OwnedItemBorrowRequestsAPIView(generics.ListAPIView):
 
         return BorrowForm.objects.filter(item__owner_id=user_id).order_by("-createdAt")
 
-from rest_framework import generics, status
-from rest_framework.response import Response
-from .models import BorrowForm, Item, User
-
 class AcceptBorrowRequestAPIView(generics.GenericAPIView):
     def post(self, request, pk):
         user_id = request.session.get("user_id")
