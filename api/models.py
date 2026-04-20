@@ -19,7 +19,7 @@ class User(models.Model):
     email = models.EmailField(unique=True, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     contactNumber = models.CharField(max_length=20,  blank=True, null=True)
-    imageUrl = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
     password = models.CharField(max_length=255)
 
     createdAt = models.DateTimeField(auto_now_add=True)
@@ -56,8 +56,12 @@ class Item(models.Model):
         return self.name
 
 class ItemImage(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.PROTECT)
-    imageUrl = models.URLField(blank=True, null=True)
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.PROTECT,
+        related_name="images"  # 🔥 ADD THIS
+    )
+    image = models.ImageField(upload_to="item_images/", blank=True, null=True)
 
     isPrimary = models.BooleanField(default=False)
     createdAt = models.DateTimeField(auto_now_add=True)

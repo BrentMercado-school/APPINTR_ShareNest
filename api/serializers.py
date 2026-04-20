@@ -19,14 +19,19 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "address",
             "contactNumber",
-            "imageUrl",
+            "image",
             "createdAt",
         ]
+class ItemImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemImage
+        fields = ["image", "isPrimary"]
 
 class ItemSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source="owner.name", read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
     expected_return_date = serializers.SerializerMethodField()
+    images = ItemImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Item
@@ -46,6 +51,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "createdAt",
             "updatedAt",
             "expected_return_date",
+            "images",
         ]
         read_only_fields = ["owner", "createdAt", "updatedAt"]
 
@@ -201,4 +207,4 @@ class ReturnFormSerializer(serializers.ModelSerializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["name", "email", "address", "contactNumber", "imageUrl"]
+        fields = ["name", "email", "address", "contactNumber", "image"]
