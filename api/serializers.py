@@ -29,6 +29,7 @@ class ItemImageSerializer(serializers.ModelSerializer):
 
 class ItemSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source="owner.name", read_only=True)
+    owner_image = serializers.ImageField(source="owner.image", read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
     expected_return_date = serializers.SerializerMethodField()
     images = ItemImageSerializer(many=True, read_only=True)
@@ -41,6 +42,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "category_name",
             "owner",
             "owner_name",
+            "owner_image",
             "name",
             "description",
             "condition",
