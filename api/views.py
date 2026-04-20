@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.parsers import MultiPartParser, JSONParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.db import transaction
 
 from api.models import Category, User, Item, BorrowForm, ReturnForm
 from api.serializers import CategorySerializer, UserSerializer, ItemSerializer, RegisterUserSerializer, \
@@ -120,12 +121,14 @@ class CreateItemAPIView(generics.CreateAPIView):
 
 class UpdateItemAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = ItemSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
         user_id = self.request.session.get("user_id")
         return Item.objects.filter(owner_id=user_id, isActive=True)
 
     def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
         item = self.get_object()
 
         if item.status == "BORROWED":
@@ -134,7 +137,29 @@ class UpdateItemAPIView(generics.RetrieveUpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        return super().update(request, *args, **kwargs)
+        data = request.data.copy()
+        data.pop("image", None)
+
+        serializer = self.get_serializer(item, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        uploaded_image = request.FILES.get("image")
+
+        with transaction.atomic():
+            self.perform_update(serializer)
+
+            if uploaded_image:
+                ItemImage.objects.filter(item=item).delete()
+
+                ItemImage.objects.create(
+                    item=item,
+                    image=uploaded_image,
+                    isPrimary=True
+                )
+
+        item = Item.objects.prefetch_related("images").get(pk=item.pk)
+
+        return Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
 
 class DeleteItemAPIView(generics.GenericAPIView):
     def delete(self, request, *args, **kwargs):
@@ -441,8 +466,11 @@ class CreateReturnFormAPIView(generics.CreateAPIView):
             refundAmount=refund_amount
         )
 
+        borrow_form.status = "RETURNED"
+        borrow_form.save(update_fields=["status"])
+
         item.status = "AVAILABLE"
-        item.save()
+        item.save(update_fields=["status"])
 
         return Response(
             {

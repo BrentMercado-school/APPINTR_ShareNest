@@ -59,7 +59,7 @@ class ItemImage(models.Model):
     item = models.ForeignKey(
         Item,
         on_delete=models.PROTECT,
-        related_name="images"  # 🔥 ADD THIS
+        related_name="images"
     )
     image = models.ImageField(upload_to="item_images/", blank=True, null=True)
 
@@ -76,6 +76,7 @@ class BorrowForm(models.Model):
         ("DECLINED", "Declined"),
         ("PENDING", "Pending"),
         ("CANCELLED", "Cancelled"),
+        ("RETURNED", "Returned"),
     ]
 
     borrower = models.ForeignKey(User, on_delete=models.PROTECT)

@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ItemImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemImage
-        fields = ["image", "isPrimary"]
+        fields = ["id", "image", "isPrimary"]
 
 class ItemSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source="owner.name", read_only=True)
@@ -33,6 +33,15 @@ class ItemSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
     expected_return_date = serializers.SerializerMethodField()
     images = ItemImageSerializer(many=True, read_only=True)
+
+    borrower_name = serializers.SerializerMethodField()
+    borrower_email = serializers.SerializerMethodField()
+    borrower_address = serializers.SerializerMethodField()
+    borrower_image = serializers.SerializerMethodField()
+    borrow_form_id = serializers.SerializerMethodField()
+    startDate = serializers.SerializerMethodField()
+    borrowingFeeSnapshot = serializers.SerializerMethodField()
+    securityDepositSnapshot = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -54,20 +63,67 @@ class ItemSerializer(serializers.ModelSerializer):
             "updatedAt",
             "expected_return_date",
             "images",
+
+            "borrower_name",
+            "borrower_email",
+            "borrower_address",
+            "borrower_image",
+            "borrow_form_id",
+            "startDate",
+            "borrowingFeeSnapshot",
+            "securityDepositSnapshot",
         ]
         read_only_fields = ["owner", "createdAt", "updatedAt"]
 
-    def get_expected_return_date(self, obj):
+    def get_active_borrow(self, obj):
         if obj.status != "BORROWED":
             return None
 
-        active_borrow = BorrowForm.objects.filter(
+        return BorrowForm.objects.select_related("borrower").filter(
             item=obj,
             status="APPROVED",
             returnform__isnull=True
         ).order_by("-createdAt").first()
 
+    def get_expected_return_date(self, obj):
+        active_borrow = self.get_active_borrow(obj)
         return active_borrow.returnDate if active_borrow else None
+
+    def get_borrower_name(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        return active_borrow.borrower.name if active_borrow and active_borrow.borrower else None
+
+    def get_borrower_email(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        return active_borrow.borrower.email if active_borrow and active_borrow.borrower else None
+
+    def get_borrower_address(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        return active_borrow.borrower.address if active_borrow and active_borrow.borrower else None
+
+    def get_borrower_image(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        if active_borrow and active_borrow.borrower and active_borrow.borrower.image:
+            request = self.context.get("request")
+            image_url = active_borrow.borrower.image.url
+            return request.build_absolute_uri(image_url) if request else image_url
+        return None
+
+    def get_borrow_form_id(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        return active_borrow.id if active_borrow else None
+
+    def get_startDate(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        return active_borrow.startDate if active_borrow else None
+
+    def get_borrowingFeeSnapshot(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        return active_borrow.borrowingFeeSnapshot if active_borrow else None
+
+    def get_securityDepositSnapshot(self, obj):
+        active_borrow = self.get_active_borrow(obj)
+        return active_borrow.securityDepositSnapshot if active_borrow else None
 
 class RegisterUserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
@@ -130,6 +186,9 @@ class BorrowFormSerializer(serializers.ModelSerializer):
 class BorrowFormListSerializer(serializers.ModelSerializer):
     borrower_name = serializers.CharField(source="borrower.name", read_only=True)
     item_name = serializers.CharField(source="item.name", read_only=True)
+    item_category_name = serializers.CharField(source="item.category.name", read_only=True)
+    condition = serializers.CharField(source="item.condition", read_only=True)
+    item_images = ItemImageSerializer(source="item.images", many=True, read_only=True)
 
     class Meta:
         model = BorrowForm
@@ -139,6 +198,9 @@ class BorrowFormListSerializer(serializers.ModelSerializer):
             "borrower_name",
             "item",
             "item_name",
+            "item_category_name",
+            "condition",
+            "item_images",
             "startDate",
             "returnDate",
             "status",
@@ -151,6 +213,9 @@ class BorrowFormListSerializer(serializers.ModelSerializer):
 class MyBorrowRequestSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source="item.name", read_only=True)
     owner_name = serializers.CharField(source="item.owner.name", read_only=True)
+    item_category_name = serializers.CharField(source="item.category.name", read_only=True)
+    condition = serializers.CharField(source="item.condition", read_only=True)
+    item_images = ItemImageSerializer(source="item.images", many=True, read_only=True)
 
     class Meta:
         model = BorrowForm
@@ -159,6 +224,9 @@ class MyBorrowRequestSerializer(serializers.ModelSerializer):
             "item",
             "item_name",
             "owner_name",
+            "item_category_name",
+            "condition",
+            "item_images",
             "startDate",
             "returnDate",
             "status",
